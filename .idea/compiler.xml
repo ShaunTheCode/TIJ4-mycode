@@ -9,5 +9,8 @@
         <module name="TIJ4-MAVEN" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="TIJ4-MAVEN" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>
