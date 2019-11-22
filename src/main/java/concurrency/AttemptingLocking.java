@@ -10,7 +10,9 @@ public class AttemptingLocking {
         boolean capture = lock.tryLock();
         try {
             System.out.println("tryLock(): " + capture);
-        } finally {
+        } catch (Exception e){
+            e.printStackTrace();
+        }finally {
             if (capture) {
                 lock.unlock();
             }
@@ -35,5 +37,26 @@ public class AttemptingLocking {
 
     public static void main(String[] args) {
         final AttemptingLocking attemptingLocking=new AttemptingLocking();
+        attemptingLocking.untimed();
+        attemptingLocking.timed();
+        new Thread(){
+            {setDaemon(true);}
+
+            @Override
+            public void run() {
+                attemptingLocking.lock.lock();
+                System.out.println("acquired");
+            }
+        }.start();
+        //Thread.yield();
+        //添加语句，让后台线程可以执行
+        try {
+            TimeUnit.SECONDS.sleep(5);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        attemptingLocking.untimed();
+        attemptingLocking.timed();
+
     }
 }
