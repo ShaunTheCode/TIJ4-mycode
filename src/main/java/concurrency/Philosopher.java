@@ -16,7 +16,7 @@ public class Philosopher implements Runnable {
         if (ponderFactor == 0) {
             return;
         }
-        TimeUnit.SECONDS.sleep(random.nextInt(ponderFactor * 250));
+        TimeUnit.MILLISECONDS.sleep(random.nextInt(ponderFactor * 250));
     }
 
     public Philosopher(Chopstick left, Chopstick right, int id, int ponderFactor) {
