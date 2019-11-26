@@ -1,0 +1,112 @@
+package concurrency;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
+import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import static net.mindview.util.Print.print;
+import static net.mindview.util.Print.printnb;
+
+class PrioritizedTask implements Runnable, Comparable<PrioritizedTask> {
+    private Random rand = new Random(47);
+    private static int counter = 0;
+    private final int id = counter++;
+    private final int priority;
+
+    protected static List<PrioritizedTask> sequence = new ArrayList<>();
+
+    public PrioritizedTask(int priority) {
+        this.priority = priority;
+        sequence.add(this);
+    }
+
+    @Override
+    public int compareTo(PrioritizedTask o) {
+        PrioritizedTask other = (PrioritizedTask) o;
+        return priority < o.priority ? 1 : (priority > o.priority ? -1 : 0);
+    }
+
+    @Override
+    public void run() {
+        try {
+            TimeUnit.MILLISECONDS.sleep(rand.nextInt(250));
+        } catch (InterruptedException e) {
+            //e.printStackTrace();
+        }
+        print(this);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("[%1$-3d]", priority) + " Task " + id;
+    }
+
+    public String summary() {
+        return "(" + id + ":" + priority + ")";
+    }
+
+    public static class EndSentinel extends PrioritizedTask {
+        private ExecutorService exec;
+
+        public EndSentinel(ExecutorService e) {
+            super(-1);
+            exec = e;
+        }
+
+        @Override
+        public void run() {
+            int count = 0;
+            for (PrioritizedTask pt : sequence) {
+                printnb(pt.summary() + " ");
+                if (++count % 5 == 0) {
+                    print();
+                }
+            }
+            print();
+            print(this + "Calling shutdownNow()");
+            exec.shutdownNow();
+        }
+    }
+}
+
+class PrioritizedTaskProducer implements Runnable {
+    private Random rand = new Random(47);
+    private Queue<Runnable> queue;
+    private ExecutorService exec;
+
+    public PrioritizedTaskProducer(Queue<Runnable> queue, ExecutorService exec) {
+        this.queue = queue;
+        this.exec = exec;
+    }
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 20; i++) {
+            queue.add(new PrioritizedTask(rand.nextInt(10)));
+            Thread.yield();
+        }
+        try {
+            for (int i = 0; i < 10; i++) {
+                queue.add(new PrioritizedTask(i));
+            }
+            queue.add(new PrioritizedTask.EndSentinel(exec));
+        } catch (Exception e) {
+            //e.printStackTrace();
+        }
+
+    }
+}
+
+class PrioritizedTaskConsumer implements Runnable {
+    @Override
+    public void run() {
+
+
+    }
+}
+
+public class PriorityBlockingQueueDemo {
+}

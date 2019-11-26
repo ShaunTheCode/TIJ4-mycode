@@ -16,7 +16,7 @@ class DelayedTask implements Runnable, Delayed {
     private final int delta;
     private final long trigger;
 
-    protected List<DelayedTask> sequence = new ArrayList<>();
+    protected static List<DelayedTask> sequence = new ArrayList<>();
 
     public DelayedTask(int delayMilliseconds) {
         delta = delayMilliseconds;
@@ -44,12 +44,12 @@ class DelayedTask implements Runnable, Delayed {
 
     @Override
     public void run() {
-        print(this + " ");
+        printnb(this + " ");
     }
 
     @Override
     public String toString() {
-        return String.format("[%1s-4d]", delta) + " Task " + id;
+        return String.format("[%1$-4d]", delta) + " Task " + id;
     }
 
     public String summary() {
