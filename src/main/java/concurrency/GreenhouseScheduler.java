@@ -143,8 +143,9 @@ public class GreenhouseScheduler {
         gs.repeat(gs.new LightOff(),0,400);
         gs.repeat(gs.new WaterOn(),0,600);
         gs.repeat(gs.new WaterOff(),0,800);
-        gs.schedule(gs.new ThermostatDay(),5000);
-        gs.schedule(gs.new CollectData(),5000);
+        gs.repeat(gs.new ThermostatDay(),0,1400);
+        gs.repeat(gs.new CollectData(),500,500);
+        System.out.println("Exiting Main()");
     }
 
 
