@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import static net.mindview.util.Print.print;
@@ -66,7 +68,7 @@ class PrioritizedTask implements Runnable, Comparable<PrioritizedTask> {
                 }
             }
             print();
-            print(this + "Calling shutdownNow()");
+            print(this + " Calling shutdownNow()");
             exec.shutdownNow();
         }
     }
@@ -101,12 +103,29 @@ class PrioritizedTaskProducer implements Runnable {
 }
 
 class PrioritizedTaskConsumer implements Runnable {
+    private PriorityBlockingQueue<Runnable> q;
+    public PrioritizedTaskConsumer(PriorityBlockingQueue<Runnable> q){
+        this.q=q;
+    }
     @Override
     public void run() {
-
-
+        try {
+            while (!Thread.interrupted()){
+                q.take().run();
+            }
+        } catch (InterruptedException e) {
+            //e.printStackTrace();
+        }
+        print("Finished PrioritizedTaskConsumer");
     }
 }
 
 public class PriorityBlockingQueueDemo {
+    public static void main(String[] args) {
+        Random rand=new Random(47);
+        ExecutorService exec= Executors.newCachedThreadPool();
+        PriorityBlockingQueue<Runnable> queue=new PriorityBlockingQueue<>();
+        exec.execute(new PrioritizedTaskProducer(queue,exec));
+        exec.execute(new PrioritizedTaskConsumer(queue));
+    }
 }
