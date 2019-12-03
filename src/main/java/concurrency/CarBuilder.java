@@ -27,11 +27,11 @@ class Car {
     }
 
     public synchronized void addDriveTrain() {
-        engine = true;
+        driveTrain = true;
     }
 
     public synchronized void addWheels() {
-        engine = true;
+        wheels = true;
     }
 
     @Override
@@ -211,7 +211,7 @@ class DriverTrainRobot extends Robot {
 
     @Override
     protected void performService() {
-        print(this + " installing engine");
+        print(this + " installing driverTrain");
         assembler.car().addDriveTrain();
     }
 }
@@ -223,7 +223,7 @@ class WheelRobot extends Robot {
 
     @Override
     protected void performService() {
-        print(this + " installing engine");
+        print(this + " installing wheel");
         assembler.car().addWheels();
     }
 }
@@ -267,6 +267,7 @@ public class CarBuilder {
         exec.execute(new WheelRobot(robotPool));
         exec.execute(new Assembler(chassisQueue, finishingQueue, robotPool));
         exec.execute(new Reporter(finishingQueue));
+        //向chassisQueue中放置car
         exec.execute(new ChassisBuilder(chassisQueue));
         TimeUnit.SECONDS.sleep(7);
         exec.shutdownNow();
