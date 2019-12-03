@@ -38,7 +38,7 @@ abstract class Accumulator {
     private class Modifier implements Runnable {
         @Override
         public void run() {
-            for (int i = 0; i < cycles; i++) {
+            for (long i = 0; i < cycles; i++) {
                 accumulate();
             }
             try {
@@ -53,9 +53,10 @@ abstract class Accumulator {
         private volatile long value;
 
         @Override
+
         public void run() {
-            for (int i = 0; i < cycles; i++) {
-                read();
+            for (long i = 0; i < cycles; i++) {
+                value = read();
             }
             try {
                 barrier.await();
@@ -80,8 +81,10 @@ abstract class Accumulator {
         printf("%-13s: %13d\n", id, duration);
     }
 
-    public static void report(Accumulator acc1, Accumulator acc2) {
-        printf("%-22s: %.2f\n", acc1.id + "/" + acc2.id, (double) acc1.duration / (double) acc2.duration);
+    public static void
+    report(Accumulator acc1, Accumulator acc2) {
+        printf("%-22s: %.2f\n", acc1.id + "/" + acc2.id,
+                (double) acc1.duration / (double) acc2.duration);
     }
 }
 
@@ -93,7 +96,7 @@ class BaseLine extends Accumulator {
     @Override
     public void accumulate() {
         value += preLoaded[index++];
-        if (index > SIZE) {
+        if (index >= SIZE) {
             index = 0;
         }
     }
@@ -112,7 +115,7 @@ class SynchronizedTest extends Accumulator {
     @Override
     public synchronized void accumulate() {
         value += preLoaded[index++];
-        if (index > SIZE) {
+        if (index >= SIZE) {
             index = 0;
         }
     }
@@ -131,11 +134,11 @@ class LockTest extends Accumulator {
     private Lock lock = new ReentrantLock();
 
     @Override
-    public synchronized void accumulate() {
+    public void accumulate() {
         lock.lock();
         try {
             value += preLoaded[index++];
-            if (index > SIZE) {
+            if (index >= SIZE) {
                 index = 0;
             }
         } finally {
@@ -144,7 +147,7 @@ class LockTest extends Accumulator {
     }
 
     @Override
-    public synchronized long read() {
+    public long read() {
         lock.lock();
         try {
             return value;
@@ -153,7 +156,6 @@ class LockTest extends Accumulator {
         }
     }
 }
-
 
 class AtomicTest extends Accumulator {
     {
@@ -164,10 +166,10 @@ class AtomicTest extends Accumulator {
     private AtomicLong value = new AtomicLong(0);
 
     @Override
-    public synchronized void accumulate() {
+    public void accumulate() {
         int i = index.getAndIncrement();
         value.getAndAdd(preLoaded[i]);
-        if (++i > SIZE) {
+        if (++i >= SIZE) {
             index.set(0);
         }
     }
@@ -185,7 +187,7 @@ public class SynchronizationComparisons {
     static AtomicTest atomic = new AtomicTest();
 
     static void test() {
-        print("=============================");
+        print("============================");
         printf("%-12s : %13d\n", "Cycles", Accumulator.cycles);
         baseLine.timedTest();
         synch.timedTest();
@@ -206,10 +208,11 @@ public class SynchronizationComparisons {
         }
         print("Warmup");
         baseLine.timedTest();
+
         for (int i = 0; i < iterations; i++) {
             test();
             Accumulator.cycles *= 2;
         }
-        Accumulator.exec.shutdownNow();
+        Accumulator.exec.shutdown();
     }
 }
